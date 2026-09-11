@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# notepad-dated — launch the Dated Notepad as a desktop app window.
+set -euo pipefail
+
+APP_DIR="$HOME/.local/share/notepad"
+PROFILE="$APP_DIR/browser-profile"
+LOG="$APP_DIR/server.log"
+
+if [ "${1:-}" = "--serve" ]; then
+  exec python3 "$APP_DIR/server.py"
+fi
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "notepad-dated            launch the notepad app window"
+  echo "notepad-dated --serve    run the server only, open the URL yourself"
+  echo "Notes live in ~/Documents/DatedNotepad as one .md file per day."
+  exit 0
+fi
+
+BROWSER=""
+for c in google-chrome google-chrome-stable chromium chromium-browser; do
+  if command -v "$c" >/dev/null 2>&1; then BROWSER="$c"; break; fi
+done
+if [ -z "$BROWSER" ]; then
+  echo "No Chrome/Chromium found. Run 'notepad-dated --serve' and open the URL." >&2
+  exit 1
+fi
+
+exec 3< <(python3 "$APP_DIR/server.py" --print-url 2>"$LOG")
+SERVER_PID=$!
+trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT INT TERM
+
+if ! read -r -t 15 URL <&3 || [ -z "${URL:-}" ]; then
+  echo "Server failed to start. Log:" >&2; cat "$LOG" >&2; exit 1
+fi
+
+mkdir -p "$PROFILE"
+# Chrome --app windows take their icon from the page favicon and downsample
+# it to 16x16, which looks blurry in the taskbar. Replace it once the window
+# appears. Best-effort: never blocks or fails the launch.
+"$APP_DIR/set-window-icon.sh" notepad-dated "$APP_DIR/icon-wm.dat" >/dev/null 2>&1 &
+
+"$BROWSER" --app="$URL" --user-data-dir="$PROFILE" \
+  --no-first-run --no-default-browser-check \
+  --window-size=1100,780 --class=notepad-dated >>"$LOG" 2>&1 || true

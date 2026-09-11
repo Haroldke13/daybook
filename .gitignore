@@ -1,0 +1,12 @@
+# Generated at install / runtime — never commit these
+*.log
+browser-profile/
+__pycache__/
+*.pyc
+*.tmp
+.DS_Store
+
+# Never commit personal notes
+notes/
+exports/
+*.md.bak

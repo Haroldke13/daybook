@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Dated Notepad
+GenericName=Daily Notes
+Comment=A notebook with one dated page per day
+Exec=@EXEC@
+Icon=dated-notepad
+Terminal=false
+Categories=Utility;TextEditor;Office;
+Keywords=notes;notepad;journal;diary;dated;daily;
+StartupNotify=true
+StartupWMClass=notepad-dated

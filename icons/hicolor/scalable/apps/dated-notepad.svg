@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="npbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#fbbf24"/>
+      <stop offset="55%"  stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="npsheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity=".26"/>
+      <stop offset="55%"  stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#npbg)"/>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#npsheen)"/>
+  <rect x="54" y="52" width="148" height="164" rx="18" fill="#ffffff"/>
+  <path d="M54 70a18 18 0 0 1 18-18h112a18 18 0 0 1 18 18v22H54z" fill="#c2410c"/>
+  <g fill="#ffffff">
+    <rect x="82"  y="36" width="15" height="34" rx="7"/>
+    <rect x="159" y="36" width="15" height="34" rx="7"/>
+  </g>
+  <g fill="#7c2d12" fill-opacity=".85">
+    <rect x="80"  y="116" width="96" height="13" rx="6"/>
+    <rect x="80"  y="144" width="72" height="13" rx="6"/>
+    <rect x="80"  y="172" width="86" height="13" rx="6"/>
+  </g>
+  <circle cx="196" cy="186" r="30" fill="#16a34a"/>
+  <path d="M183 186 l9 9 l17 -19" fill="none" stroke="#ffffff" stroke-width="8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
