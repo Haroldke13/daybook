@@ -14,6 +14,8 @@ import datetime as dt
 import json
 import mimetypes
 import re
+import os
+import time
 import secrets
 import socket
 import sys
@@ -257,13 +259,14 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(text, str):
                 raise ValueError("text must be a string")
         except (ValueError, KeyError, TypeError) as e:
-            return self._json(400, {"error": str(e)})
+            return self._json(400, {"error": "invalid request"})
 
         NOTES_DIR.mkdir(parents=True, exist_ok=True)
         if text.strip():
             tmp = p.with_suffix(".md.tmp")
             tmp.write_text(text, encoding="utf-8")
-            tmp.replace(p)          # atomic: never a half-written note
+            tmp.replace(p)
+            p.chmod(0o600)          # atomic: never a half-written note
         elif p.exists():
             p.unlink()              # emptied note = deleted day
         return self._json(200, {"ok": True, "saved": p.name, "chars": len(text)})
@@ -295,7 +298,7 @@ class Handler(BaseHTTPRequestHandler):
             if start and end and start > end:
                 start, end = end, start
         except (ValueError, KeyError, TypeError) as e:
-            return self._json(400, {"error": str(e)})
+            return self._json(400, {"error": "invalid request"})
 
         days = []
         for note in sorted(list_notes(), key=lambda x: x["date"]):
@@ -338,6 +341,29 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(200, target.read_bytes(), ctype)
 
 
+
+def _exit_when_orphaned(httpd, interval=5.0):
+    """Shut down if our launcher goes away.
+
+    Finding 9: the launcher's EXIT trap is skipped on SIGKILL, and bash defers
+    it while the browser runs in the foreground, so a server could linger with
+    no window - an unmanaged endpoint holding a live token. Re-parenting to
+    init is the reliable signal that our launcher is gone.
+    """
+    import threading
+
+    def watch():
+        start_ppid = os.getppid()
+        while True:
+            time.sleep(interval)
+            ppid = os.getppid()
+            if ppid != start_ppid and ppid == 1:
+                httpd.shutdown()
+                return
+    t = threading.Thread(target=watch, daemon=True)
+    t.start()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=0)
@@ -360,6 +386,7 @@ def main():
 
     url = f"http://127.0.0.1:{port}/?t={token}"
     print(url if args.print_url else f"Dated Notepad at {url}\nNotes in {NOTES_DIR}", flush=True)
+    _exit_when_orphaned(httpd)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
